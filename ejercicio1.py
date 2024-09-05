@@ -47,4 +47,4 @@ Model.display()
 
 for o in Model.O:
     for d in Model.D:
-        print(f'toneladas de {o} a {d}: {Model.x[o, d].value}')
+        print(f'Toneladas de {o} a {d}: {Model.x[o, d].value}')
