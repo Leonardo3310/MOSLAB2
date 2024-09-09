@@ -71,7 +71,7 @@ def regla_covertura(Model, l):
     # Si un sensor cubre la ubicación o una adyacente
     return sum(Model.x[s, l] * sensor_coverage.get((s, l), 0) for s in Model.S) + sum(Model.x[s, l_adj] * adyacencias.get((l_adj, l), 0) for s in Model.S for l_adj in Model.L) >= 1
 
-Model.coverage_constraint = Constraint(Model.L, rule=regla_covertura)
+Model.covertura_constraint = Constraint(Model.L, rule=regla_covertura)
 
 # Resolver el Modelo
 solver = SolverFactory('glpk')
