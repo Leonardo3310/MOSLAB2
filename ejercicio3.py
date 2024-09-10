@@ -10,8 +10,8 @@ sensores = ['S1', #Enviromental sensor
            'S3'  #Public safety sensor
            ]  
 
-Model.L = Set(initialize=locations)
-Model.S = Set(initialize=sensores)
+Model.L = locations
+Model.S = sensores
 
 # Parámetros
 instalation_cost = {'L1': 250, 'L2': 100, 'L3': 200, 'L4': 250, 'L5': 300, 'L6': 120, 'L7': 170, 'L8': 150, 'L9': 270, 'L10': 130, 'L11': 100, 'L12': 230} 
