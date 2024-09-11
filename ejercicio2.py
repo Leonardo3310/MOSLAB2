@@ -33,7 +33,7 @@ Model.distancias = Param(Model.localidades, Model.localidades,
                          initialize=lambda Model, i, j: matriz_distancias[i-1][j-1])
 
 # Variables de decisión
-Model.x = Var(Model.equipos, Model.localidades, Model.localidades, domain=Binary)
+Model.x = Var(Model.equipos, Model.localidades, Model.localidades, domain=Binary, initialize=0)
 
 # Función objetivo: Minimizar la distancia total recorrida por todos los equipos
 def funcion_objetivo(Model):
@@ -41,19 +41,13 @@ def funcion_objetivo(Model):
 
 Model.obj = Objective(rule=funcion_objetivo, sense=minimize)
 
-# Restricción: Flujo de entrada y salida debe ser igual
-# def restriccion_flujo(Model, i, e):
-#     return sum(Model.x[e, j, i] for j in Model.localidades if j != i) == sum(Model.x[e, i, j] for j in Model.localidades if j != i)
-
-# Model.flujo = Constraint(Model.localidades, Model.equipos, rule=restriccion_flujo)
-
 
 
 # Restricción: Cada localidad debe ser abandonada una sola vez
-# def restriccion_salida(Model, i):
-#     return sum(Model.x[e, j, i] for e in Model.equipos for j in Model.localidades if j != i) == 1
+def restriccion_salida(Model, i):
+     return sum(Model.x[e, j, i] for e in Model.equipos for j in Model.localidades if j != i) >= 1
 
-# Model.salida = Constraint(Model.localidades, rule=restriccion_salida)
+#Model.salida = Constraint(Model.localidades, rule=restriccion_salida)
 
 
 # Lo que entra a una localidad debe salir
@@ -65,29 +59,16 @@ def intermediate_rule(Model, i):
     
 Model.intermediate = Constraint(Model.localidades, rule=intermediate_rule)
 
-# Restricción: Cada localidad debe ser abandonada una sola vez
-def source_rule(Model, i):
-    if i == lo:
-        return sum(Model.x[e, i, j] for e in Model.equipos for j in Model.localidades if j != i) == 1
-    else:
-        return Constraint.Skip
-Model.source = Constraint(Model.localidades, rule=source_rule)
-
-
-
-
 
 # Restricción: Cada equipo debe comenzar en la localidad de origen 
-
-
 def restriccion_inicio(Model, e):
-    return sum(Model.x[e, lo, j] for j in Model.localidades if j != 1) == 1
+    return sum(Model.x[e, lo, j] for j in Model.localidades) == 1
 
 Model.inicio = Constraint(Model.equipos, rule=restriccion_inicio)
 
-# Restricción: Cada equipo debe regresar a la localidad de origen (localidad 1)
+# Restricción: Cada equipo debe regresar a la localidad de origen 
 def restriccion_final(Model, e):
-    return sum(Model.x[e, i, lo] for i in Model.localidades if i != 1) == 1
+    return sum(Model.x[e, i, lo] for i in Model.localidades) == 1
 
 Model.final = Constraint(Model.equipos, rule=restriccion_final)
 
