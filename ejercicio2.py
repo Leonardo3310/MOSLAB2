@@ -17,7 +17,7 @@ Model = ConcreteModel()
 
 # Número de localidades y equipos
 num_localidades = len(matriz_distancias)
-num_equipos = 4
+num_equipos = 1
 lo = 0  # Localidad de origen
 
 # Conjuntos
@@ -45,12 +45,7 @@ def restriccion_regreso_origen(Model, e):
     return sum(Model.x[e, i, lo] for i in Model.localidades if i != lo) == 1
 Model.regreso_origen = Constraint(Model.equipos, rule=restriccion_regreso_origen)
 
-#Restricción 3: cada equipo debe visitar al menos dos localidades
-def restriccion_visitar_al_menos_dos(Model, e):
-    return sum(Model.x[e, i, j] for i in Model.localidades for j in Model.localidades if i != j) >= 2
-#Model.visitar_al_menos_dos = Constraint(Model.equipos, rule=restriccion_visitar_al_menos_dos)
-
-# Restricción 4: cada localidad debe ser visitada por un solo equipo
+# Restricción 3: cada localidad debe ser visitada por un solo equipo
 def restriccion_visitar_localidad_una_vez(Model, i):
     if i != lo:
         return sum(Model.x[e, i, j] for e in Model.equipos for j in Model.localidades if j != i) == 1
@@ -58,13 +53,23 @@ def restriccion_visitar_localidad_una_vez(Model, i):
         return Constraint.Skip
 Model.visitar_localidad_una_vez = Constraint(Model.localidades, rule=restriccion_visitar_localidad_una_vez)
 
-# Restricción 5: todo lo que entra a una localidad debe salir
+# Restricción 4: todo lo que entra a una localidad debe salir
 def restriccion_continuidad(Model, e, i):
     if i != lo:
         return sum(Model.x[e, i, j] for j in Model.localidades if j != i) == sum(Model.x[e, j, i] for j in Model.localidades if j != i)
     else:
         return Constraint.Skip
 Model.continuidad = Constraint(Model.equipos, Model.localidades, rule=restriccion_continuidad)
+
+# Restricción 5: subtour elimination MTZ
+Model.u = Var(Model.equipos, Model.localidades, domain=NonNegativeIntegers, initialize=0)
+def restriccion_subtour_elimination(Model, e, i, j):
+    if i != lo and j != lo:
+        return Model.u[e, i] - Model.u[e, j] + num_localidades * Model.x[e, i, j] <= num_localidades - 1
+    else:
+        return Constraint.Skip
+Model.subtour_elimination = Constraint(Model.equipos, Model.localidades, Model.localidades, rule=restriccion_subtour_elimination)
+
 
 # Resolver el modelo
 solver = SolverFactory('glpk')
