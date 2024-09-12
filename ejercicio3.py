@@ -69,9 +69,20 @@ Model.obj = Objective(rule=funcion_obj, sense=minimize)
 # Restricción: Cada ubicación debe estar cubierta por al menos un sensor o un sensor en una ubicación adyacente
 def regla_covertura(Model, l):
     # Si un sensor cubre la ubicación o una adyacente
-    return sum(Model.x[s, l] * sensor_coverage.get((s, l), 0) for s in Model.S) + sum(Model.x[s, l_adj] * adyacencias.get((l_adj, l), 0) for s in Model.S for l_adj in Model.L) >= 1
+    return sum(Model.x[s, l] * sensor_coverage.get((s, l), 0) for s in Model.S) + sum(Model.x[s, l_adj] * sensor_coverage.get((s,l),0)*adyacencias.get((l_adj, l), 0) for s in Model.S for l_adj in Model.L) >= 1
 
-Model.covertura_constraint = Constraint(Model.L, rule=regla_covertura)
+#Model.covertura_constraint = Constraint(Model.L, rule=regla_covertura)
+
+# Restricción: la necesidad de un sensor específico en cada localidad debe ser satisfecha
+def regla_necesidad(Model, s, l):
+    # Verificar si la necesidad de un sensor específico está cubierta en la localidad o adyacente
+    if sensor_coverage.get((s, l), 0) == 1:  # Solo aplica si esa localidad debe ser cubierta por este sensor
+        return sum(Model.x[s, l_adj] * adyacencias.get((l_adj, l), 0) + Model.x[s, l] for l_adj in Model.L) >= 1
+    else:
+        return Constraint.Skip  # Si no hay necesidad de este sensor en la localidad, no aplica la restricción
+
+Model.necesidad_constraint = Constraint(Model.S, Model.L, rule=regla_necesidad)
+
 
 # Resolver el Modelo
 solver = SolverFactory('glpk')

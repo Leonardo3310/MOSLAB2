@@ -17,7 +17,7 @@ Model = ConcreteModel()
 
 # Número de localidades y equipos
 num_localidades = len(matriz_distancias)
-num_equipos = 1
+num_equipos = 2
 lo = 0  # Localidad de origen
 
 # Conjuntos
@@ -56,7 +56,7 @@ Model.visitar_localidad_una_vez = Constraint(Model.localidades, rule=restriccion
 # Restricción 4: todo lo que entra a una localidad debe salir
 def restriccion_continuidad(Model, e, i):
     if i != lo:
-        return sum(Model.x[e, i, j] for j in Model.localidades if j != i) == sum(Model.x[e, j, i] for j in Model.localidades if j != i)
+        return sum(Model.x[e, i, j] for j in Model.localidades if j != i) - sum(Model.x[e, j, i] for j in Model.localidades if j != i)==0
     else:
         return Constraint.Skip
 Model.continuidad = Constraint(Model.equipos, Model.localidades, rule=restriccion_continuidad)
