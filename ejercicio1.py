@@ -2,6 +2,7 @@ from pyomo.environ import *
 
 
 Model = ConcreteModel()
+Model.dual = Suffix(direction=Suffix.IMPORT) 
 
 
 Model.O = Set(initialize=['Bogota', 'Medellin'])
@@ -48,3 +49,13 @@ Model.display()
 for o in Model.O:
     for d in Model.D:
         print(f'Toneladas de {o} a {d}: {Model.x[o, d].value}')
+
+
+
+print("\nDual Values (Shadow Prices):")
+for c in Model.component_objects(Constraint, active=True):
+    print(f"Duals for constraint: {c}")
+    c_object = getattr(Model, c.name)
+    for index in c_object:
+        if c_object[index].active:
+            print(f"  {c.name}[{index}]: Dual Value = {Model.dual[c_object[index]]}")
