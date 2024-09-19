@@ -64,6 +64,13 @@ Model.x = Var(Model.S, Model.L, domain=Binary)
 def funcion_obj(Model):
     return sum(instalation_cost[l] * Model.x[s, l] for s in Model.S for l in Model.L) + sum((energy_consumption[s] + communication_cost.get((s,l),0)) * Model.x[s, l] for s in Model.S for l in Model.L)
 
+"""
+# Función objetivo solo con el costo de instalación
+def funcion_obj(Model):
+    return sum(instalation_cost[l] * Model.x[s, l] for s in Model.S for l in Model.L)
+
+"""
+
 Model.obj = Objective(rule=funcion_obj, sense=minimize)
 
 # Restricción: Cada ubicación debe estar cubierta por al menos un sensor o un sensor en una ubicación adyacente
